@@ -1,214 +1,111 @@
-# Portfolio Optimization with Time Series Forecasting
+# Notebooks — GMF Portfolio Optimization Project
 
-**GMF Investments | Financial Analytics Project**
+This folder contains the Jupyter notebooks for the **Time Series Forecasting for Portfolio Management Optimization** challenge (GMF Investments). Each notebook corresponds to one task in the project pipeline, from raw data extraction through backtesting a final trading strategy.
 
-A complete end-to-end pipeline for portfolio optimization using time series forecasting on historical financial data for TSLA, BND, and SPY.
+## Contents
 
----
+| Notebook | Task | Description |
+|---|---|---|
+| `task1_eda.ipynb` | Task 1 — Preprocess & Explore | Data extraction (yfinance), cleaning, EDA, stationarity testing, risk metrics |
+| `task2_modeling.ipynb` | Task 2 — Forecasting Models | ARIMA/SARIMA and LSTM model development and comparison |
+| `task3_forecast.ipynb` | Task 3 — Future Forecasts | 6–12 month TSLA forecast with confidence intervals and trend analysis |
+| `task4_portfolio_optimization.ipynb` | Task 4 — MPT Optimization | Efficient Frontier, Max Sharpe & Min Volatility portfolios |
+| `task5_backtesting.ipynb` | Task 5 — Strategy Backtesting | Strategy vs. 60/40 SPY/BND benchmark simulation |
 
-## Business Objective
-
-Guide Me in Finance (GMF) Investments needs a data-driven system to:
-- Predict future market trends using historical price data
-- Optimize asset allocation across a multi-asset portfolio
-- Minimize risk while maximizing returns for clients
-- Provide actionable insights through quantitative analysis
-
-The platform answers four key business questions:
-1. What are the expected future price movements of high-growth assets like TSLA?
-2. How should a portfolio be allocated across TSLA, BND, and SPY to maximize risk-adjusted returns?
-3. Does a model-driven strategy outperform a simple passive benchmark?
-4. What level of uncertainty exists in long-term forecasts?
+> Rename/organize your actual notebook files to match the table above if they differ — this keeps the structure consistent with the project's required layout.
 
 ---
 
-## Project Structure
+## Task 1 — Data Extraction & EDA
 
-```
-portfolio-optimization/
-├── .github/
-│   └── workflows/
-│       └── unittests.yml
-├── data/
-│   └── processed/          # Cleaned data and saved charts
-├── notebooks/
-│   ├── task1_eda.ipynb     # EDA, stationarity tests, risk metrics
-│   └── task2_modeling.ipynb # ARIMA and LSTM forecasting models
-├── src/
-│   └── __init__.py
-├── tests/
-│   └── __init__.py
-├── scripts/
-│   └── __init__.py
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
+**Data:** TSLA, BND, SPY daily OHLCV data from Yahoo Finance, Jan 1, 2015 – Jun 30, 2026.
 
----
+**What it covers:**
+- Fetching and cleaning historical price data (missing values, dtypes, date indexing)
+- Visualizing closing prices, daily returns, and rolling volatility
+- Outlier detection on daily returns
+- Augmented Dickey-Fuller (ADF) stationarity tests on prices vs. returns
+- Foundational risk metrics: Value at Risk (VaR) and Sharpe Ratio
 
-## Assets Analyzed
-
-| Asset | Ticker | Description | Risk Profile |
-|-------|--------|-------------|--------------|
-| Tesla | TSLA | High-growth stock | High risk, high return |
-| Vanguard Bond ETF | BND | U.S. investment-grade bonds | Low risk, stable income |
-| S&P 500 ETF | SPY | Tracks S&P 500 Index | Moderate risk, broad exposure |
-
-**Data Period:** January 1, 2015 — June 30, 2026  
-**Source:** Yahoo Finance (via yfinance library)
-
----
-
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/Bethabrh/portfolio-optimization.git
-cd portfolio-optimization
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
----
-
-## Requirements
-
-```
-yfinance
-pandas
-numpy
-matplotlib
-seaborn
-statsmodels
-pmdarima
-scikit-learn
-tensorflow
-keras
-PyPortfolioOpt
-scipy
-jupyterlab
-```
-
----
-
-## Completed Tasks
-
-### Task 1 — Data Extraction and EDA ✅
-
-**What was done:**
-- Downloaded 2,888 trading days of data for TSLA, BND, and SPY from Yahoo Finance
-- Verified zero missing values across all assets
-- Performed comprehensive Exploratory Data Analysis
-
-**Key Findings:**
+**Key findings:**
 
 | Metric | TSLA | SPY | BND |
-|--------|------|-----|-----|
+|---|---|---|---|
 | Annualized Return | 45.42% | 14.43% | 2.00% |
 | Annualized Volatility | 57.18% | 17.65% | 5.31% |
 | Sharpe Ratio | 0.7595 | 0.7042 | -0.0008 |
-| Value at Risk (95%) | -5.17% | -1.67% | -0.48% |
+| VaR (95%) | -5.17% | -1.67% | -0.48% |
 | Max Drawdown | -73.63% | -33.72% | -18.58% |
 
-**Stationarity Results (ADF Test):**
-- Closing prices: NON-STATIONARY for all 3 assets (p > 0.05)
-- Daily returns: STATIONARY for all 3 assets (p < 0.05)
-- Implication: ARIMA requires d=1 differencing on price data
-
-**Correlation Analysis:**
-- TSLA & SPY: 0.4935 (moderate positive correlation)
-- BND & SPY: 0.1157 (low — good diversifier)
-- BND & TSLA: 0.0594 (very low — excellent diversifier)
-
-**Outlier Detection:**
-- TSLA had the most extreme single-day moves
-- All outliers identified using 3 standard deviation threshold
+- Closing prices are **non-stationary** for all three assets (p > 0.05); daily returns are **stationary** (p < 0.05) — confirms ARIMA needs `d = 1` differencing.
+- Correlations: TSLA–SPY 0.49 (moderate), BND–SPY 0.12 (low), BND–TSLA 0.06 (near-zero) — BND is the strongest diversifier in the set.
 
 ---
 
-### Task 2 — Time Series Forecasting Models ✅
+## Task 2 — Forecasting Models
 
-**Train/Test Split:**
-- Training: January 2015 — December 2024 (2,516 days)
-- Testing: January 2025 — June 2026 (372 days)
+**Split:** chronological — train Jan 2015–Dec 2024, test Jan 2025–Jun 2026 (no shuffling).
 
-**ARIMA Model:**
-- Best parameters found via auto_arima: ARIMA(0,1,0)
-- The random walk model (d=1, no AR or MA terms) performed best
-- This is consistent with the Efficient Market Hypothesis
+**ARIMA:** best parameters via `auto_arima` → **ARIMA(0,1,0)**, i.e. a random-walk model — consistent with the Efficient Market Hypothesis.
 
-**LSTM Model Architecture:**
-- Input: 60-day lookback window
-- Layer 1: LSTM(50 units) + Dropout(0.2)
-- Layer 2: LSTM(50 units) + Dropout(0.2)
-- Layer 3: Dense(25 units)
-- Output: Dense(1 unit)
-- Optimizer: Adam | Loss: MSE | Early stopping (patience=5)
+**LSTM architecture:**
+- 60-day lookback window
+- LSTM(50) + Dropout(0.2) → LSTM(50) + Dropout(0.2) → Dense(25) → Dense(1)
+- Adam optimizer, MSE loss, early stopping (patience = 5)
 
-**Model Comparison:**
+**Model comparison:**
 
 | Model | MAE | RMSE | MAPE |
-|-------|-----|------|------|
-| ARIMA(0,1,0) | 54.4412 | 70.5393 | 17.24% |
-| LSTM | 12.5247 | 15.9393 | 3.50% |
+|---|---|---|---|
+| ARIMA(0,1,0) | 54.44 | 70.54 | 17.24% |
+| LSTM | 12.52 | 15.94 | 3.50% |
 
-**Winner: LSTM** — 4x more accurate on all metrics
-
-**Why LSTM outperforms ARIMA:**
-- TSLA exhibits highly non-linear price behavior that ARIMA cannot capture
-- LSTM learns complex temporal patterns from 60-day sequences
-- ARIMA(0,1,0) is essentially a random walk — useful as a baseline but limited for volatile assets
+**Winner: LSTM**, roughly 4x more accurate on every metric — it captures TSLA's non-linear price dynamics that a linear ARIMA process cannot.
 
 ---
 
-## Next Steps (Upcoming Tasks)
+## Task 3 — Future Forecasts
 
-### Task 3 — Forecast Future Market Trends
-- Use the best-performing LSTM model to generate 6-12 month future forecasts
-- Plot forecasts alongside historical data with confidence intervals
-- Analyze widening confidence intervals over the forecast horizon
-- Identify market opportunities and risks from the forecast
+- Uses the LSTM model to generate a 6–12 month forward forecast for TSLA, produced iteratively (predict → feed forward → predict).
+- Plots historical prices, test-period predictions, and future forecast on one timeline, with confidence intervals shown separately from the historical/test series.
+- Discusses how the confidence interval widens further out in the horizon, and what that implies about the reliability of long-range forecasts (i.e., near-term forecasts are more trustworthy than 9–12 month projections).
+- Summarizes opportunities (expected upside scenarios) and risks (volatility, downside scenarios) implied by the forecast band.
 
-### Task 4 — Portfolio Optimization (Modern Portfolio Theory)
-- Use LSTM-forecasted TSLA returns as the expected return input
-- Use historical average returns for BND and SPY
-- Compute the covariance matrix from historical daily returns
-- Generate the Efficient Frontier using PyPortfolioOpt
-- Identify the Maximum Sharpe Ratio Portfolio and Minimum Volatility Portfolio
-- Recommend optimal portfolio weights for TSLA, BND, and SPY
-
-### Task 5 — Strategy Backtesting
-- Define backtesting window: January 2025 — January 2026
-- Compare optimized portfolio against a 60% SPY / 40% BND benchmark
-- Calculate total return, annualized return, Sharpe ratio, and maximum drawdown
-- Evaluate whether the model-driven approach beats the passive benchmark
-- Reflect on limitations and potential improvements
+*(Fill in this notebook's specific forecast direction, opportunity/risk bullets, and confidence-interval discussion once finalized.)*
 
 ---
 
-## Key Learnings So Far
+## Task 4 — Portfolio Optimization (MPT)
 
-- TSLA's closing price is non-stationary (as expected for stock prices) but daily returns are stationary, confirming standard financial theory
-- LSTM significantly outperforms ARIMA for volatile, non-linear assets like TSLA
-- BND provides the best diversification benefit with near-zero correlation to TSLA
-- The Efficient Market Hypothesis is partially supported — ARIMA's best model is a random walk
+- **Expected returns:** TSLA return is taken from the Task 2/3 LSTM forecast; BND and SPY use historical annualized average daily returns.
+- **Covariance matrix:** computed from historical daily returns of all three assets.
+- **Efficient Frontier:** generated with PyPortfolioOpt, plotting volatility (x) vs. expected return (y).
+- Marks the **Maximum Sharpe Ratio (Tangency) Portfolio** and the **Minimum Volatility Portfolio**.
+- Recommends a final portfolio with weights for TSLA/BND/SPY, expected annual return, expected volatility, and Sharpe Ratio, with a short justification for the choice.
 
----
-
-## Repository
-
-**GitHub:** https://github.com/Bethabrh/portfolio-optimization
+*(Fill in this notebook's final recommended weights and metrics once the optimization is run.)*
 
 ---
 
-## Team
+## Task 5 — Strategy Backtesting
 
-- Kerod
-- Mahbubah  
-- Feven
+- **Backtest window:** Jan 2025 – Jan 2026 (held out from model training).
+- **Benchmark:** static 60% SPY / 40% BND portfolio.
+- **Strategy:** starts from the Task 4 optimal weights, either held fixed or rebalanced monthly.
+- Compares cumulative returns, total return, annualized return, Sharpe Ratio, and Max Drawdown for strategy vs. benchmark.
+- Concludes whether the model-driven strategy beat the passive benchmark, and notes the backtest's limitations (single historical window, no transaction costs, forecast uncertainty, etc.).
 
-**Challenge Period:** July 1 — July 7, 2026  
-**Interim Submission:** July 5, 2026  
-**Final Submission:** July 7, 2026
+*(Fill in this notebook's final performance table and conclusion once the backtest is run.)*
+
+---
+
+## Running the Notebooks
+
+```bash
+# from the project root
+pip install -r requirements.txt
+jupyter lab notebooks/
+```
+
+Run notebooks in order (1 → 5); later notebooks depend on outputs (cleaned data, trained models, forecasts) saved from earlier ones — save any intermediate artifacts to `data/processed/`.
+
