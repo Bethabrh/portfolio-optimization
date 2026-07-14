@@ -12,7 +12,6 @@ This folder contains the Jupyter notebooks for the **Time Series Forecasting for
 | `task4_portfolio_optimization.ipynb` | Task 4 — MPT Optimization | Efficient Frontier, Max Sharpe & Min Volatility portfolios |
 | `task5_backtesting.ipynb` | Task 5 — Strategy Backtesting | Strategy vs. 60/40 SPY/BND benchmark simulation |
 
-> Rename/organize your actual notebook files to match the table above if they differ — this keeps the structure consistent with the project's required layout.
 
 ---
 
@@ -71,7 +70,6 @@ This folder contains the Jupyter notebooks for the **Time Series Forecasting for
 - Discusses how the confidence interval widens further out in the horizon, and what that implies about the reliability of long-range forecasts (i.e., near-term forecasts are more trustworthy than 9–12 month projections).
 - Summarizes opportunities (expected upside scenarios) and risks (volatility, downside scenarios) implied by the forecast band.
 
-*(Fill in this notebook's specific forecast direction, opportunity/risk bullets, and confidence-interval discussion once finalized.)*
 
 ---
 
@@ -83,8 +81,6 @@ This folder contains the Jupyter notebooks for the **Time Series Forecasting for
 - Marks the **Maximum Sharpe Ratio (Tangency) Portfolio** and the **Minimum Volatility Portfolio**.
 - Recommends a final portfolio with weights for TSLA/BND/SPY, expected annual return, expected volatility, and Sharpe Ratio, with a short justification for the choice.
 
-*(Fill in this notebook's final recommended weights and metrics once the optimization is run.)*
-
 ---
 
 ## Task 5 — Strategy Backtesting
@@ -95,7 +91,7 @@ This folder contains the Jupyter notebooks for the **Time Series Forecasting for
 - Compares cumulative returns, total return, annualized return, Sharpe Ratio, and Max Drawdown for strategy vs. benchmark.
 - Concludes whether the model-driven strategy beat the passive benchmark, and notes the backtest's limitations (single historical window, no transaction costs, forecast uncertainty, etc.).
 
-*(Fill in this notebook's final performance table and conclusion once the backtest is run.)*
+
 
 ---
 
